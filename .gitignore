@@ -1,0 +1,22 @@
+# ========================
+# Frontend (React + Node)
+# ========================
+
+# Variables de entorno
+.env
+
+# Node modules y compilados
+/node_modules/
+/dist/
+/dist-ssr/
+*.local
+
+# Logs de npm/yarn/pnpm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Archivos del sistema
+.DS_Store
