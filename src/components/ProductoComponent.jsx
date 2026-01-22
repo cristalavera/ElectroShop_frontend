@@ -11,7 +11,7 @@ function ProductoComponent() {
   const [mensaje, setMensaje] = useState('');
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Cargar productos al iniciar
+  // Cargar productos al iniciar la aplicación
   useEffect(() => {
 	  axios.get(`${API_URL}/productos`, {
 		headers: {
