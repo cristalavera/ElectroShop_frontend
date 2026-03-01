@@ -1,24 +1,28 @@
 function Navbar({ onLogout }) {
   return (
-    <div className="bg-white shadow-md px-6 py-4 flex items-center justify-between">
+    <div className="bg-red-500 md:bg-blue-500 lg:bg-green-500 shadow-md px-4 md:px-6 py-4 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-3">
 
       {/* IZQUIERDA */}
-      <img src="/logo.jpg" alt="ElectroShop" className="h-16 w-auto object-contain" />
+      <img
+        src="/logo.jpg"
+        alt="ElectroShop"
+        className="h-12 md:h-16 w-auto object-contain"
+      />
 
       {/* CENTRO */}
-      <h2 className="text-2xl font-semibold text-gray-700">
+      <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-700 text-center">
         Panel de gestión de inventario
       </h2>
 
       {/* DERECHA */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-4">
 
         <div className="flex items-center gap-2 text-gray-700">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-8 h-8"
+            className="w-6 h-6 md:w-8 md:h-8"
           >
             <path
               fillRule="evenodd"
@@ -27,12 +31,12 @@ function Navbar({ onLogout }) {
             />
           </svg>
 
-          <span>Usuario</span>
+          <span className="text-sm md:text-base">Usuario</span>
         </div>
 
         <button
           onClick={onLogout}
-          className="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-800 transition"
+          className="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-800 transition text-sm md:text-base"
         >
           Cerrar sesión
         </button>
