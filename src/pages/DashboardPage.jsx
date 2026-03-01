@@ -3,7 +3,6 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 
 function DashboardPage({ onLogout }) {
-
   const [productos, setProductos] = useState([]);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -16,10 +15,33 @@ function DashboardPage({ onLogout }) {
 
   // 🔹 GET productos
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    // 🔹 Si estamos en modo demo → no llamamos al backend
+    if (token === "demo-token") {
+      setProductos([
+        {
+          id: 1,
+          nombre: "Producto Demo",
+          descripcion: "Ejemplo de producto",
+          precio: 99.99,
+          stock: 10,
+        },
+        {
+          id: 2,
+          nombre: "Producto Demo 2",
+          descripcion: "Otro ejemplo",
+          precio: 49.99,
+          stock: 5,
+        },
+      ]);
+      return;
+    }
+
     axios
       .get(`${API_URL}/productos`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((res) => setProductos(res.data))
@@ -61,7 +83,6 @@ function DashboardPage({ onLogout }) {
       setPrecio("");
       setStock("");
       setMensaje("");
-
     } catch (error) {
       console.error(error);
       if (error.response?.status === 401) {
@@ -81,7 +102,6 @@ function DashboardPage({ onLogout }) {
       });
 
       setProductos(productos.filter((p) => p.id !== id));
-
     } catch (error) {
       console.error(error);
       if (error.response?.status === 401) {
@@ -95,12 +115,12 @@ function DashboardPage({ onLogout }) {
     alert("Aquí se abrirá el modal de edición en el ejercicio 7");
   };
 
+  console.log("Productos:", productos);
   return (
     <div>
       <Navbar onLogout={onLogout} />
 
       <div className="p-6">
-
         {/* ACCIONES */}
         <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
           <h2 className="text-xl font-semibold">Inventario ElectroShop</h2>
@@ -128,7 +148,6 @@ function DashboardPage({ onLogout }) {
 
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
           {/* FORMULARIO */}
           <div className="bg-panel p-6 rounded-xl shadow-sm border border-gray-300">
             <h3 className="font-semibold mb-3">Nuevo producto</h3>
@@ -170,11 +189,13 @@ function DashboardPage({ onLogout }) {
 
           {/* PRODUCTOS */}
           <div className="md:col-span-2">
-
             {viewMode === "card" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {productos.map((p) => (
-                  <div key={p.id} className="bg-card border p-4 rounded-xl shadow-sm">
+                  <div
+                    key={p.id}
+                    className="bg-card border p-4 rounded-xl shadow-sm"
+                  >
                     <h3 className="font-semibold">{p.nombre}</h3>
                     <p>{p.descripcion}</p>
                     <p>Precio: {p.precio}€</p>
@@ -234,7 +255,6 @@ function DashboardPage({ onLogout }) {
               </table>
             )}
           </div>
-
         </div>
       </div>
     </div>
