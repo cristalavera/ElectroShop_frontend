@@ -1,46 +1,26 @@
-import { useState } from "react";
-
 function LoginPage({ onLogin }) {
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [aceptado, setAceptado] = useState(false);
-
-  const handleLogin = () => {
-
-    if (!aceptado) {
-      alert("Debes aceptar los términos");
-      return;
-    }
-
-    // 🔹 Token falso para permitir acceso
-    localStorage.setItem("authToken", "demo-token");
-
-    onLogin();
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
 
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden md:grid md:grid-cols-2 max-w-4xl w-full">
+      {/* TARJETA */}
+      <div className="bg-white shadow-lg rounded-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 max-w-4xl w-full">
 
         {/* IMAGEN */}
-        <div className="hidden md:block">
+        <div className="h-40 md:h-auto">
           <img
             src="/fondo_login.jpeg"
             className="h-full w-full object-cover"
-            alt="Fondo"
           />
         </div>
 
         {/* FORMULARIO */}
         <div className="p-8 flex flex-col justify-center">
 
-          <h2 className="text-2xl font-bold mb-2">
+          <h2 className="text-2xl font-bold mb-2 text-center md:text-left">
             Bienvenido a <span className="text-blue-600">ElectroShop</span>
           </h2>
 
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-6 text-center md:text-left">
             Panel de gestión de inventario
           </p>
 
@@ -49,31 +29,23 @@ function LoginPage({ onLogin }) {
             <input
               type="email"
               placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
+              className="border rounded px-4 py-2"
             />
 
             <input
               type="password"
               placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
+              className="border rounded px-4 py-2"
             />
 
             <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={aceptado}
-                onChange={(e) => setAceptado(e.target.checked)}
-              />
+              <input type="checkbox" />
               Acepto los términos
             </label>
 
             <button
               type="button"
-              onClick={handleLogin}
+              onClick={onLogin}
               className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
             >
               Iniciar sesión
@@ -82,6 +54,7 @@ function LoginPage({ onLogin }) {
           </form>
 
         </div>
+
       </div>
 
     </div>

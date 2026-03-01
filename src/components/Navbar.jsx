@@ -1,6 +1,6 @@
 function Navbar({ onLogout }) {
   return (
-    <div className="bg-white shadow-md px-4 md:px-6 py-4 flex flex-col md:flex-row items-start md:items-center md:justify-between gap-3">
+    <div className="bg-white shadow-md px-4 md:px-6 py-4 flex flex-col md:flex-row items-center md:items-center text-center md:text-left md:justify-between gap-3">
 
       {/* IZQUIERDA */}
       <img

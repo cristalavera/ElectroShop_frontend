@@ -13,17 +13,15 @@ function DashboardPage({ onLogout }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // 🔹 GET productos
   useEffect(() => {
     const token = localStorage.getItem("authToken");
 
-    // 🔹 Si estamos en modo demo → no llamamos al backend
     if (token === "demo-token") {
       setProductos([
         {
           id: 1,
           nombre: "Producto Demo",
-          descripcion: "Ejemplo de producto",
+          descripcion: "Ejemplo",
           precio: 99.99,
           stock: 10,
         },
@@ -40,9 +38,7 @@ function DashboardPage({ onLogout }) {
 
     axios
       .get(`${API_URL}/productos`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setProductos(res.data))
       .catch((err) => {
@@ -54,7 +50,6 @@ function DashboardPage({ onLogout }) {
       });
   }, []);
 
-  // 🔹 POST producto
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -92,7 +87,6 @@ function DashboardPage({ onLogout }) {
     }
   };
 
-  // 🔹 DELETE producto
   const eliminarProducto = async (id) => {
     try {
       await axios.delete(`${API_URL}/productos/${id}`, {
@@ -112,20 +106,19 @@ function DashboardPage({ onLogout }) {
   };
 
   const modificarProducto = () => {
-    alert("Aquí se abrirá el modal de edición en el ejercicio 7");
+    alert("Aquí se abrirá el modal en el ejercicio 7");
   };
 
-  console.log("Productos:", productos);
   return (
     <div>
       <Navbar onLogout={onLogout} />
 
-      <div className="p-6">
-        {/* ACCIONES */}
-        <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+      <div className="p-4 md:p-6">
+        {/* HEADER + BOTONES */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
           <h2 className="text-xl font-semibold">Inventario ElectroShop</h2>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <button
               onClick={() => setViewMode("card")}
               className="bg-gray-200 px-3 py-1 rounded"
@@ -149,7 +142,7 @@ function DashboardPage({ onLogout }) {
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* FORMULARIO */}
-          <div className="bg-panel p-6 rounded-xl shadow-sm border border-gray-300">
+          <div className="bg-panel p-6 rounded-xl shadow-sm border">
             <h3 className="font-semibold mb-3">Nuevo producto</h3>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
@@ -190,7 +183,7 @@ function DashboardPage({ onLogout }) {
           {/* PRODUCTOS */}
           <div className="md:col-span-2">
             {viewMode === "card" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {productos.map((p) => (
                   <div
                     key={p.id}
@@ -208,7 +201,6 @@ function DashboardPage({ onLogout }) {
                       >
                         Modificar
                       </button>
-
                       <button
                         onClick={() => eliminarProducto(p.id)}
                         className="bg-danger text-white text-xs px-3 py-1 rounded"
@@ -220,39 +212,39 @@ function DashboardPage({ onLogout }) {
                 ))}
               </div>
             ) : (
-              <table className="w-full border bg-card rounded-xl overflow-hidden">
-                <thead className="bg-panel">
-                  <tr>
-                    <th className="px-4 py-3">Nombre</th>
-                    <th className="px-4 py-3">Precio</th>
-                    <th className="px-4 py-3">Stock</th>
-                    <th className="px-4 py-3">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productos.map((p) => (
-                    <tr key={p.id} className="border-t">
-                      <td className="px-4 py-3">{p.nombre}</td>
-                      <td className="px-4 py-3">{p.precio}€</td>
-                      <td className="px-4 py-3">{p.stock}</td>
-                      <td className="px-4 py-3 flex gap-2">
-                        <button
-                          onClick={() => modificarProducto(p)}
-                          className="bg-warning text-white text-xs px-3 py-1 rounded"
-                        >
-                          Modificar
-                        </button>
-                        <button
-                          onClick={() => eliminarProducto(p.id)}
-                          className="bg-danger text-white text-xs px-3 py-1 rounded"
-                        >
-                          Eliminar
-                        </button>
-                      </td>
+              <div className="w-full overflow-x-auto">
+                <table className="min-w-full md:min-w-0 w-full border bg-card rounded-xl table-auto">
+                  <thead className="bg-panel">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Nombre</th>
+                      <th className="px-4 py-3 text-left">Precio</th>
+                      <th className="px-4 py-3 text-left">Stock</th>
+                      <th className="px-4 py-3 text-left">Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+
+                  <tbody>
+                    {productos.map((p) => (
+                      <tr key={p.id} className="border-t">
+                        <td className="px-4 py-3">{p.nombre}</td>
+                        <td className="px-4 py-3">{p.precio}€</td>
+                        <td className="px-4 py-3">{p.stock}</td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <button className="bg-warning text-white text-xs px-3 py-1 rounded">
+                              Modificar
+                            </button>
+                            <button className="bg-danger text-white text-xs px-3 py-1 rounded">
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
