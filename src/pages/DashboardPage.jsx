@@ -15,15 +15,22 @@ function DashboardPage({ onLogout }) {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    axios
-      .get(`${API_URL}/productos`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      })
-      .then((res) => setProductos(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+  axios
+    .get(`${API_URL}/productos`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+    })
+    .then((res) => setProductos(res.data))
+    .catch((err) => {
+      console.error(err);
+
+      if (err.response && err.response.status === 401) {
+        localStorage.removeItem("authToken");
+        onLogout();
+      }
+    });
+}, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,8 +60,13 @@ function DashboardPage({ onLogout }) {
       setPrecio("");
       setStock("");
     } catch (error) {
-      console.error(error);
-    }
+  console.error(error);
+
+  if (error.response && error.response.status === 401) {
+    localStorage.removeItem("authToken");
+    onLogout();
+  }
+}
   };
 
   const eliminarProducto = async (id) => {
@@ -67,8 +79,19 @@ function DashboardPage({ onLogout }) {
 
       setProductos(productos.filter((p) => p.id !== id));
     } catch (error) {
-      console.error(error);
-    }
+  console.error(error);
+
+  if (error.response && error.response.status === 401) {
+    localStorage.removeItem("authToken");
+    onLogout();
+  }
+}
+
+  if (error.response && error.response.status === 401) {
+    localStorage.removeItem("authToken");
+    onLogout();
+  }
+}
   };
 
   const modificarProducto = (producto) => {
