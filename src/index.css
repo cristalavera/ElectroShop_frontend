@@ -1,1 +1,50 @@
 @import "tailwindcss";
+
+/* 🎨 TEMA ELECTROSHOP */
+:root {
+  /* COLORES FUNCIONALES */
+  --color-primary: #3b5b8a;
+  --color-secondary: #3f7d5c;
+  --color-danger: #a94442;
+  --color-warning: #b7791f;
+
+  /* FONDOS */
+  --color-background: #f2f5f7;   /* fondo general */
+  --color-panel: #e2e8f0;        /* formulario */
+  --color-card: #ffffff;         /* tarjetas */
+
+  /* BORDES */
+  --color-border: #374151;
+
+  /* TIPOGRAFÍA */
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Poppins", sans-serif;
+}
+
+/* 🧱 BASE */
+@layer base {
+  body {
+    @apply text-gray-800;
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+  }
+}
+
+/* 🎨 UTILIDADES PERSONALIZADAS */
+@layer utilities {
+
+  /* BOTONES */
+  .bg-primary { background-color: var(--color-primary); }
+  .bg-secondary { background-color: var(--color-secondary); }
+  .bg-danger { background-color: var(--color-danger); }
+  .bg-warning { background-color: var(--color-warning); }
+
+  /* ESTRUCTURA */
+  .bg-panel { background-color: var(--color-panel); }
+  .bg-card { background-color: var(--color-card); }
+
+}

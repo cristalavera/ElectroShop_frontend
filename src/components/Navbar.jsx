@@ -6,7 +6,7 @@ function Navbar({ onLogout }) {
       <img src="/logo.jpg" alt="ElectroShop" className="h-16 w-auto object-contain" />
 
       {/* CENTRO */}
-      <h2 className="text-lg font-semibold text-gray-700">
+      <h2 className="text-2xl font-semibold text-gray-700">
         Panel de gestión de inventario
       </h2>
 

@@ -3,16 +3,17 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 
 function DashboardPage({ onLogout }) {
-  // Estados
   const [productos, setProductos] = useState([]);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [stock, setStock] = useState("");
   const [mensaje, setMensaje] = useState("");
+
+  const [viewMode, setViewMode] = useState("card"); // tarjeta o lista
+
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Cargar productos al iniciar la aplicación
   useEffect(() => {
     axios
       .get(`${API_URL}/productos`, {
@@ -24,12 +25,11 @@ function DashboardPage({ onLogout }) {
       .catch((err) => console.error(err));
   }, []);
 
-  // Función para manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nombre || !precio || !stock) {
-      setMensaje("Por favor, completa todos los campos obligatorios");
+      setMensaje("Completa los campos obligatorios");
       return;
     }
 
@@ -46,41 +46,33 @@ function DashboardPage({ onLogout }) {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
+
       setProductos([...productos, res.data]);
-      setMensaje(`Producto "${res.data.nombre}" creado con éxito!`);
       setNombre("");
       setDescripcion("");
       setPrecio("");
       setStock("");
     } catch (error) {
       console.error(error);
-      setMensaje("Error al crear el producto");
     }
   };
 
   const eliminarProducto = async (id) => {
     try {
-      // 1. OBTENER el token
       const token = localStorage.getItem("authToken");
 
-      // 2. LÍNEA DE VERIFICACIÓN (Muestra el valor en la consola)
-      console.log(
-        "Token para DELETE:",
-        token
-          ? "ENVIANDO: " + token.substring(0, 10) + "..."
-          : "ERROR: No hay token",
-      );
-
-      // 3. Petición Axios, usando el token en los headers
       await axios.delete(`${API_URL}/productos/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
+
       setProductos(productos.filter((p) => p.id !== id));
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const modificarProducto = (producto) => {
+    alert("Aquí se abrirá el modal de edición en el ejercicio 7");
   };
 
   return (
@@ -88,25 +80,147 @@ function DashboardPage({ onLogout }) {
       <Navbar onLogout={onLogout} />
 
       <div className="p-6">
-        {/* ZONA CRUD */}
-        <div className="mb-6 flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Gestión de inventario</h2>
+        {/* ACCIONES */}
+        <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+          <h2 className="text-xl font-semibold">Inventario ElectroShop</h2>
 
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-            Añadir producto
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode("card")}
+              className="bg-gray-200 px-3 py-1 rounded"
+            >
+              Tarjetas
+            </button>
+
+            <button
+              onClick={() => setViewMode("list")}
+              className="bg-gray-200 px-3 py-1 rounded"
+            >
+              Lista
+            </button>
+
+            <button className="bg-primary text-white px-4 py-2 rounded-lg shadow-sm hover:opacity-90">
+              Añadir producto
+            </button>
+          </div>
         </div>
 
-        {/* GRID PRINCIPAL */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* PANEL IZQUIERDO */}
-          <div className="md:col-span-1 bg-gray-50 p-4 rounded shadow">
-            <ProductForm />
+        {/* GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* FORMULARIO */}
+          <div className="col-span-1 bg-panel p-6 rounded-xl shadow-sm border border-gray-300">
+            <h3 className="font-semibold mb-3">Nuevo producto</h3>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+              <input
+                placeholder="Nombre*"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                placeholder="Descripción"
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                placeholder="Precio*"
+                type="number"
+                step="0.01"
+                value={precio}
+                onChange={(e) => setPrecio(e.target.value)}
+                className="border p-2 rounded"
+              />
+              <input
+                placeholder="Stock*"
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                className="border p-2 rounded"
+              />
+
+              <button className="bg-secondary text-white py-2 rounded-lg shadow-sm hover:opacity-90 transition">
+                Crear Producto
+              </button>
+            </form>
           </div>
 
-          {/* PANEL DERECHO */}
-          <div className="md:col-span-2">
-            <ProductList />
+          {/* LISTA / TARJETAS */}
+          <div className="col-span-1 md:col-span-2">
+            {viewMode === "card" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {productos.map((p) => (
+                  <div
+                    key={p.id}
+                    className="bg-card border border-gray-400 p-4 rounded-xl shadow-sm"
+                  >
+                    <h3 className="font-semibold">{p.nombre}</h3>
+                    <p>{p.descripcion}</p>
+                    <p>Precio: {p.precio}€</p>
+                    <p>Stock: {p.stock}</p>
+
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => modificarProducto(p)}
+                        className="bg-warning text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
+                      >
+                        Modificar
+                      </button>
+
+                      <button
+                        onClick={() => eliminarProducto(p.id)}
+                        className="bg-danger text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <table className="w-full border border-gray-400 bg-card rounded-xl overflow-hidden">
+                <thead className="bg-panel">
+                  <tr className="text-left text-sm text-gray-700">
+                    <th className="px-4 py-3 font-semibold">Nombre</th>
+                    <th className="px-4 py-3 font-semibold">Precio</th>
+                    <th className="px-4 py-3 font-semibold">Stock</th>
+                    <th className="px-4 py-3 font-semibold">Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {productos.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="border-t border-gray-300 hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-3">{p.nombre}</td>
+                      <td className="px-4 py-3">{p.precio}€</td>
+                      <td className="px-4 py-3">{p.stock}</td>
+
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => modificarProducto(p)}
+                            className="bg-warning text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
+                          >
+                            Modificar
+                          </button>
+
+                          <button
+                            onClick={() => eliminarProducto(p.id)}
+                            className="bg-danger text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
