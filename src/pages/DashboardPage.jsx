@@ -8,8 +8,11 @@ function DashboardPage({ onLogout }) {
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [stock, setStock] = useState("");
-  const [mensaje, setMensaje] = useState("");
   const [viewMode, setViewMode] = useState("card");
+  const [showForm, setShowForm] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [fadeView, setFadeView] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -53,10 +56,7 @@ function DashboardPage({ onLogout }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!nombre || !precio || !stock) {
-      setMensaje("Completa los campos obligatorios");
-      return;
-    }
+    if (!nombre || !precio || !stock) return;
 
     const nuevoProducto = {
       nombre,
@@ -65,129 +65,143 @@ function DashboardPage({ onLogout }) {
       stock: parseInt(stock),
     };
 
-    try {
-      const res = await axios.post(`${API_URL}/productos`, nuevoProducto, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+    setProductos([...productos, { ...nuevoProducto, id: Date.now() }]);
 
-      setProductos([...productos, res.data]);
-      setNombre("");
-      setDescripcion("");
-      setPrecio("");
-      setStock("");
-      setMensaje("");
-    } catch (error) {
-      console.error(error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem("authToken");
-        onLogout();
-      }
-    }
+    setNombre("");
+    setDescripcion("");
+    setPrecio("");
+    setStock("");
+    setShowForm(false);
+    setShowSuccess(true);
+
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 2000);
   };
 
-  const eliminarProducto = async (id) => {
-    try {
-      await axios.delete(`${API_URL}/productos/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
+  const eliminarProducto = (id) => {
+    setDeletingId(id);
 
+    setTimeout(() => {
       setProductos(productos.filter((p) => p.id !== id));
-    } catch (error) {
-      console.error(error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem("authToken");
-        onLogout();
-      }
-    }
-  };
-
-  const modificarProducto = () => {
-    alert("Aquí se abrirá el modal en el ejercicio 7");
+      setDeletingId(null);
+    }, 300);
   };
 
   return (
     <div>
       <Navbar onLogout={onLogout} />
+      {showSuccess && (
+        <div className="fixed top-4 right-4 bg-secondary text-white px-4 py-2 rounded-lg shadow-lg animate-fade">
+          Producto creado correctamente
+        </div>
+      )}
 
       <div className="p-4 md:p-6">
-        {/* HEADER + BOTONES */}
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
           <h2 className="text-xl font-semibold">Inventario ElectroShop</h2>
 
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <button
-              onClick={() => setViewMode("card")}
+              onClick={() => {
+                setFadeView(false);
+                setTimeout(() => {
+                  setViewMode("card");
+                  setFadeView(true);
+                }, 150);
+              }}
               className="bg-gray-200 px-3 py-1 rounded"
             >
               Tarjetas
             </button>
 
             <button
-              onClick={() => setViewMode("list")}
+              onClick={() => {
+                setFadeView(false);
+                setTimeout(() => {
+                  setViewMode("list");
+                  setFadeView(true);
+                }, 150);
+              }}
               className="bg-gray-200 px-3 py-1 rounded"
             >
               Lista
             </button>
 
-            <button className="bg-primary text-white px-4 py-2 rounded-lg shadow-sm hover:opacity-90">
-              Añadir producto
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className={`px-4 py-2 rounded-lg text-white transition-colors duration-300 ${
+                showForm ? "bg-gray-500" : "bg-primary"
+              }`}
+            >
+              {showForm ? "Cerrar" : "Añadir producto"}
             </button>
           </div>
         </div>
 
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* FORMULARIO */}
-          <div className="bg-panel p-6 rounded-xl shadow-sm border">
-            <h3 className="font-semibold mb-3">Nuevo producto</h3>
+          {/* FORMULARIO SOLO SI ESTÁ ABIERTO */}
+          {showForm && (
+            <div className="md:col-span-1 animate-fade">
+              <div className="bg-panel p-6 rounded-xl shadow-sm border">
+                <h3 className="font-semibold mb-3">Nuevo producto</h3>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
-              <input
-                placeholder="Nombre*"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                placeholder="Descripción"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                placeholder="Precio*"
-                type="number"
-                step="0.01"
-                value={precio}
-                onChange={(e) => setPrecio(e.target.value)}
-                className="border p-2 rounded"
-              />
-              <input
-                placeholder="Stock*"
-                type="number"
-                value={stock}
-                onChange={(e) => setStock(e.target.value)}
-                className="border p-2 rounded"
-              />
+                <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+                  <input
+                    placeholder="Nombre*"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    className="border p-2 rounded"
+                  />
 
-              <button className="bg-secondary text-white py-2 rounded-lg shadow-sm hover:opacity-90">
-                Crear Producto
-              </button>
-            </form>
-          </div>
+                  <input
+                    placeholder="Descripción"
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                    className="border p-2 rounded"
+                  />
+
+                  <input
+                    placeholder="Precio*"
+                    type="number"
+                    step="0.01"
+                    value={precio}
+                    onChange={(e) => setPrecio(e.target.value)}
+                    className="border p-2 rounded"
+                  />
+
+                  <input
+                    placeholder="Stock*"
+                    type="number"
+                    value={stock}
+                    onChange={(e) => setStock(e.target.value)}
+                    className="border p-2 rounded"
+                  />
+
+                  <button className="bg-secondary text-white py-2 rounded-lg">
+                    Crear Producto
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* PRODUCTOS */}
-          <div className="md:col-span-2">
+          <div
+            className={`transition-opacity duration-300 ${
+              fadeView ? "opacity-100" : "opacity-0"
+            } ${showForm ? "md:col-span-2" : "md:col-span-3"}`}
+          >
             {viewMode === "card" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {productos.map((p) => (
                   <div
                     key={p.id}
-                    className="bg-card border p-4 rounded-xl shadow-sm"
+                    className={`bg-card border p-4 rounded-xl shadow-sm transition-opacity duration-300 ${
+                      deletingId === p.id ? "opacity-0" : "opacity-100"
+                    }`}
                   >
                     <h3 className="font-semibold">{p.nombre}</h3>
                     <p>{p.descripcion}</p>
@@ -195,12 +209,10 @@ function DashboardPage({ onLogout }) {
                     <p>Stock: {p.stock}</p>
 
                     <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => modificarProducto(p)}
-                        className="bg-warning text-white text-xs px-3 py-1 rounded"
-                      >
+                      <button className="bg-warning text-white text-xs px-3 py-1 rounded">
                         Modificar
                       </button>
+
                       <button
                         onClick={() => eliminarProducto(p.id)}
                         className="bg-danger text-white text-xs px-3 py-1 rounded"
@@ -213,7 +225,7 @@ function DashboardPage({ onLogout }) {
               </div>
             ) : (
               <div className="w-full overflow-x-auto">
-                <table className="min-w-full md:min-w-0 w-full border bg-card rounded-xl table-auto">
+                <table className="min-w-full w-full border bg-card rounded-xl table-auto">
                   <thead className="bg-panel">
                     <tr>
                       <th className="px-4 py-3 text-left">Nombre</th>
@@ -225,17 +237,25 @@ function DashboardPage({ onLogout }) {
 
                   <tbody>
                     {productos.map((p) => (
-                      <tr key={p.id} className="border-t">
+                      <tr
+                        key={p.id}
+                        className={`border-t transition-opacity duration-300 ${
+                          deletingId === p.id ? "opacity-0" : "opacity-100"
+                        }`}
+                      >
                         <td className="px-4 py-3">{p.nombre}</td>
                         <td className="px-4 py-3">{p.precio}€</td>
                         <td className="px-4 py-3">{p.stock}</td>
-
                         <td className="px-4 py-3">
                           <div className="flex gap-2">
                             <button className="bg-warning text-white text-xs px-3 py-1 rounded">
                               Modificar
                             </button>
-                            <button className="bg-danger text-white text-xs px-3 py-1 rounded">
+
+                            <button
+                              onClick={() => eliminarProducto(p.id)}
+                              className="bg-danger text-white text-xs px-3 py-1 rounded"
+                            >
                               Eliminar
                             </button>
                           </div>
