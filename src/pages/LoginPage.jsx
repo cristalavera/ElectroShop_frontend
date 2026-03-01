@@ -1,8 +1,27 @@
+import { useState } from "react";
+
 function LoginPage({ onLogin }) {
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [aceptado, setAceptado] = useState(false);
+
+  const handleLogin = () => {
+
+    if (!aceptado) {
+      alert("Debes aceptar los términos");
+      return;
+    }
+
+    // 🔹 Token falso para permitir acceso
+    localStorage.setItem("authToken", "demo-token");
+
+    onLogin();
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
 
-      {/* TARJETA */}
       <div className="bg-white shadow-lg rounded-lg overflow-hidden md:grid md:grid-cols-2 max-w-4xl w-full">
 
         {/* IMAGEN */}
@@ -10,6 +29,7 @@ function LoginPage({ onLogin }) {
           <img
             src="/fondo_login.jpeg"
             className="h-full w-full object-cover"
+            alt="Fondo"
           />
         </div>
 
@@ -29,24 +49,31 @@ function LoginPage({ onLogin }) {
             <input
               type="email"
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="border rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
             />
 
             <input
               type="password"
               placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="border rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
             />
 
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                checked={aceptado}
+                onChange={(e) => setAceptado(e.target.checked)}
+              />
               Acepto los términos
             </label>
 
-            {/* BOTÓN */}
             <button
               type="button"
-              onClick={onLogin}
+              onClick={handleLogin}
               className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
             >
               Iniciar sesión
@@ -55,7 +82,6 @@ function LoginPage({ onLogin }) {
           </form>
 
         </div>
-
       </div>
 
     </div>

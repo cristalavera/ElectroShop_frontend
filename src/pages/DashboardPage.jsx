@@ -3,35 +3,36 @@ import axios from "axios";
 import Navbar from "../components/Navbar";
 
 function DashboardPage({ onLogout }) {
+
   const [productos, setProductos] = useState([]);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [stock, setStock] = useState("");
   const [mensaje, setMensaje] = useState("");
-
-  const [viewMode, setViewMode] = useState("card"); // tarjeta o lista
+  const [viewMode, setViewMode] = useState("card");
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // 🔹 GET productos
   useEffect(() => {
-  axios
-    .get(`${API_URL}/productos`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-    })
-    .then((res) => setProductos(res.data))
-    .catch((err) => {
-      console.error(err);
+    axios
+      .get(`${API_URL}/productos`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      })
+      .then((res) => setProductos(res.data))
+      .catch((err) => {
+        console.error(err);
+        if (err.response?.status === 401) {
+          localStorage.removeItem("authToken");
+          onLogout();
+        }
+      });
+  }, []);
 
-      if (err.response && err.response.status === 401) {
-        localStorage.removeItem("authToken");
-        onLogout();
-      }
-    });
-}, []);
-
+  // 🔹 POST producto
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,42 +60,38 @@ function DashboardPage({ onLogout }) {
       setDescripcion("");
       setPrecio("");
       setStock("");
-    } catch (error) {
-  console.error(error);
+      setMensaje("");
 
-  if (error.response && error.response.status === 401) {
-    localStorage.removeItem("authToken");
-    onLogout();
-  }
-}
+    } catch (error) {
+      console.error(error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        onLogout();
+      }
+    }
   };
 
+  // 🔹 DELETE producto
   const eliminarProducto = async (id) => {
     try {
-      const token = localStorage.getItem("authToken");
-
       await axios.delete(`${API_URL}/productos/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
       });
 
       setProductos(productos.filter((p) => p.id !== id));
+
     } catch (error) {
-  console.error(error);
-
-  if (error.response && error.response.status === 401) {
-    localStorage.removeItem("authToken");
-    onLogout();
-  }
-}
-
-  if (error.response && error.response.status === 401) {
-    localStorage.removeItem("authToken");
-    onLogout();
-  }
-}
+      console.error(error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        onLogout();
+      }
+    }
   };
 
-  const modificarProducto = (producto) => {
+  const modificarProducto = () => {
     alert("Aquí se abrirá el modal de edición en el ejercicio 7");
   };
 
@@ -103,6 +100,7 @@ function DashboardPage({ onLogout }) {
       <Navbar onLogout={onLogout} />
 
       <div className="p-6">
+
         {/* ACCIONES */}
         <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3">
           <h2 className="text-xl font-semibold">Inventario ElectroShop</h2>
@@ -130,8 +128,9 @@ function DashboardPage({ onLogout }) {
 
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
           {/* FORMULARIO */}
-          <div className="col-span-1 bg-panel p-6 rounded-xl shadow-sm border border-gray-300">
+          <div className="bg-panel p-6 rounded-xl shadow-sm border border-gray-300">
             <h3 className="font-semibold mb-3">Nuevo producto</h3>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
@@ -163,21 +162,19 @@ function DashboardPage({ onLogout }) {
                 className="border p-2 rounded"
               />
 
-              <button className="bg-secondary text-white py-2 rounded-lg shadow-sm hover:opacity-90 transition">
+              <button className="bg-secondary text-white py-2 rounded-lg shadow-sm hover:opacity-90">
                 Crear Producto
               </button>
             </form>
           </div>
 
-          {/* LISTA / TARJETAS */}
-          <div className="col-span-1 md:col-span-2">
+          {/* PRODUCTOS */}
+          <div className="md:col-span-2">
+
             {viewMode === "card" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {productos.map((p) => (
-                  <div
-                    key={p.id}
-                    className="bg-card border border-gray-400 p-4 rounded-xl shadow-sm"
-                  >
+                  <div key={p.id} className="bg-card border p-4 rounded-xl shadow-sm">
                     <h3 className="font-semibold">{p.nombre}</h3>
                     <p>{p.descripcion}</p>
                     <p>Precio: {p.precio}€</p>
@@ -186,14 +183,14 @@ function DashboardPage({ onLogout }) {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => modificarProducto(p)}
-                        className="bg-warning text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
+                        className="bg-warning text-white text-xs px-3 py-1 rounded"
                       >
                         Modificar
                       </button>
 
                       <button
                         onClick={() => eliminarProducto(p.id)}
-                        className="bg-danger text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
+                        className="bg-danger text-white text-xs px-3 py-1 rounded"
                       >
                         Eliminar
                       </button>
@@ -202,42 +199,34 @@ function DashboardPage({ onLogout }) {
                 ))}
               </div>
             ) : (
-              <table className="w-full border border-gray-400 bg-card rounded-xl overflow-hidden">
+              <table className="w-full border bg-card rounded-xl overflow-hidden">
                 <thead className="bg-panel">
-                  <tr className="text-left text-sm text-gray-700">
-                    <th className="px-4 py-3 font-semibold">Nombre</th>
-                    <th className="px-4 py-3 font-semibold">Precio</th>
-                    <th className="px-4 py-3 font-semibold">Stock</th>
-                    <th className="px-4 py-3 font-semibold">Acciones</th>
+                  <tr>
+                    <th className="px-4 py-3">Nombre</th>
+                    <th className="px-4 py-3">Precio</th>
+                    <th className="px-4 py-3">Stock</th>
+                    <th className="px-4 py-3">Acciones</th>
                   </tr>
                 </thead>
-
                 <tbody>
                   {productos.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="border-t border-gray-300 hover:bg-gray-50"
-                    >
+                    <tr key={p.id} className="border-t">
                       <td className="px-4 py-3">{p.nombre}</td>
                       <td className="px-4 py-3">{p.precio}€</td>
                       <td className="px-4 py-3">{p.stock}</td>
-
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => modificarProducto(p)}
-                            className="bg-warning text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
-                          >
-                            Modificar
-                          </button>
-
-                          <button
-                            onClick={() => eliminarProducto(p.id)}
-                            className="bg-danger text-white text-xs px-3 py-1 rounded-lg shadow-sm hover:opacity-90 min-w-22.5"
-                          >
-                            Eliminar
-                          </button>
-                        </div>
+                      <td className="px-4 py-3 flex gap-2">
+                        <button
+                          onClick={() => modificarProducto(p)}
+                          className="bg-warning text-white text-xs px-3 py-1 rounded"
+                        >
+                          Modificar
+                        </button>
+                        <button
+                          onClick={() => eliminarProducto(p.id)}
+                          className="bg-danger text-white text-xs px-3 py-1 rounded"
+                        >
+                          Eliminar
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -245,6 +234,7 @@ function DashboardPage({ onLogout }) {
               </table>
             )}
           </div>
+
         </div>
       </div>
     </div>
