@@ -24,7 +24,9 @@ test("renderiza el login y ejecuta onLogin al hacer clic", () => {
 });
 
 test("muestra error si el login falla", () => {
-  const mockLogin = vi.fn();
+  const mockLogin = vi.fn(() => {
+    throw new Error("Error de conexión");
+  });
 
   render(<LoginPage onLogin={mockLogin} />);
 
