@@ -1,4 +1,5 @@
 import React from "react";
+
 function LoginPage({ onLogin }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
@@ -11,6 +12,7 @@ function LoginPage({ onLogin }) {
           <img
             src="/fondo_login.jpeg"
             className="h-full w-full object-cover"
+            alt="Login"
           />
         </div>
 

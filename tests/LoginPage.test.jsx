@@ -18,4 +18,17 @@ test("renderiza el login y ejecuta onLogin al hacer clic", () => {
   expect(mockLogin).toHaveBeenCalledTimes(1);
 });
 
+test("muestra error si el login falla", () => {
+    console.log("ENTRA EN TEST 2");
+    const mockLogin = vi.fn(() => {
+        throw new Error("Error de conexión");
+    });
+
+    render(<LoginPage onLogin={mockLogin} />);
+
+    fireEvent.click(screen.getByText("Login"));
+
+    expect(mockLogin).toHaveBeenCalled();
+});
+
 

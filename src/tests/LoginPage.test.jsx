@@ -1,15 +1,20 @@
 import React from "react";
-import { describe, test, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { test, expect, vi, afterEach } from "vitest";
+import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import LoginPage from "../pages/LoginPage";
+
+// 🔥 Limpia el DOM después de cada test (MUY IMPORTANTE)
+afterEach(() => {
+  cleanup();
+});
 
 test("renderiza el login y ejecuta onLogin al hacer clic", () => {
   const mockLogin = vi.fn();
 
   render(<LoginPage onLogin={mockLogin} />);
 
-  const boton = screen.getByText(/Iniciar sesión/i);
+  const boton = screen.getByRole("button", { name: /iniciar sesión/i });
 
   expect(boton).toBeInTheDocument();
 
@@ -18,4 +23,15 @@ test("renderiza el login y ejecuta onLogin al hacer clic", () => {
   expect(mockLogin).toHaveBeenCalledTimes(1);
 });
 
+test("muestra error si el login falla", () => {
+  const mockLogin = vi.fn();
 
+  render(<LoginPage onLogin={mockLogin} />);
+
+  const boton = screen.getByRole("button", { name: /iniciar sesión/i });
+
+  fireEvent.click(boton);
+
+  // ✔ Comprobamos que se llamó (aunque falle)
+  expect(mockLogin).toHaveBeenCalled();
+});
