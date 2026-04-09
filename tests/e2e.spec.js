@@ -35,7 +35,7 @@ test('los productos se muestran correctamente', async ({ page }) => {
   await expect(page.locator('button:has-text("Eliminar")').first()).toBeVisible();
 });
 
-test.skip('login incorrecto muestra error', async ({ page }) => {
+test('login incorrecto muestra error', async ({ page }) => {
   await page.goto('https://electroshopfrontendapp.vercel.app');
 
   await page.fill('input[placeholder="Email"]', 'mal@test.com');
