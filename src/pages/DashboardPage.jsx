@@ -16,6 +16,26 @@ function DashboardPage({ onLogout }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // 🔹 FUNCIÓN PARA CARGAR PRODUCTOS DESDE BACKEND
+  const cargarProductos = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const res = await axios.get(`${API_URL}/productos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setProductos(res.data);
+    } catch (err) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        onLogout();
+      }
+    }
+  };
+
+  // 🔹 CARGA INICIAL
   useEffect(() => {
     const token = localStorage.getItem("authToken");
 
@@ -39,20 +59,10 @@ function DashboardPage({ onLogout }) {
       return;
     }
 
-    axios
-      .get(`${API_URL}/productos`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setProductos(res.data))
-      .catch((err) => {
-        console.error(err);
-        if (err.response?.status === 401) {
-          localStorage.removeItem("authToken");
-          onLogout();
-        }
-      });
+    cargarProductos();
   }, []);
 
+  // 🔹 CREAR PRODUCTO (solo frontend por ahora)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -65,32 +75,45 @@ function DashboardPage({ onLogout }) {
       stock: parseInt(stock),
     };
 
-    setProductos([...productos, { ...nuevoProducto, id: Date.now() }]);
+    try {
+      await axios.post(`${API_URL}/productos`, nuevoProducto);
 
-    setNombre("");
-    setDescripcion("");
-    setPrecio("");
-    setStock("");
-    setShowForm(false);
-    setShowSuccess(true);
+      await cargarProductos(); // 🔥 refrescar desde backend
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 2000);
+      setNombre("");
+      setDescripcion("");
+      setPrecio("");
+      setStock("");
+      setShowForm(false);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error al crear producto:", error);
+    }
   };
 
-  const eliminarProducto = (id) => {
-    setDeletingId(id);
+  // 🔹 ELIMINAR PRODUCTO (FIX REAL)
+  const eliminarProducto = async (id) => {
+    try {
+      setDeletingId(id);
 
-    setTimeout(() => {
-      setProductos(productos.filter((p) => p.id !== id));
+      await axios.delete(`${API_URL}/productos/${id}`);
+
+      await cargarProductos(); // 🔥 sincroniza con BD
+
       setDeletingId(null);
-    }, 300);
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+    }
   };
 
   return (
     <div>
       <Navbar onLogout={onLogout} />
+
       {showSuccess && (
         <div className="fixed top-4 right-4 bg-secondary text-white px-4 py-2 rounded-lg shadow-lg animate-fade">
           Producto creado correctamente
@@ -142,7 +165,7 @@ function DashboardPage({ onLogout }) {
 
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* FORMULARIO SOLO SI ESTÁ ABIERTO */}
+          {/* FORMULARIO */}
           {showForm && (
             <div className="md:col-span-1 animate-fade">
               <div className="bg-panel p-6 rounded-xl shadow-sm border">
@@ -194,78 +217,34 @@ function DashboardPage({ onLogout }) {
               fadeView ? "opacity-100" : "opacity-0"
             } ${showForm ? "md:col-span-2" : "md:col-span-3"}`}
           >
-            {viewMode === "card" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {productos.map((p) => (
-                  <div
-                    key={p.id}
-                    className={`bg-card border p-4 rounded-xl shadow-sm transition-opacity duration-300 ${
-                      deletingId === p.id ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    <h3 className="font-semibold">{p.nombre}</h3>
-                    <p>{p.descripcion}</p>
-                    <p>Precio: {p.precio}€</p>
-                    <p>Stock: {p.stock}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {productos.map((p) => (
+                <div
+                  key={p.id}
+                  className={`bg-card border p-4 rounded-xl shadow-sm transition-opacity duration-300 ${
+                    deletingId === p.id ? "opacity-0" : "opacity-100"
+                  }`}
+                >
+                  <h3 className="font-semibold">{p.nombre}</h3>
+                  <p>{p.descripcion}</p>
+                  <p>Precio: {p.precio}€</p>
+                  <p>Stock: {p.stock}</p>
 
-                    <div className="flex gap-2 mt-2">
-                      <button className="bg-warning text-white text-xs px-3 py-1 rounded">
-                        Modificar
-                      </button>
+                  <div className="flex gap-2 mt-2">
+                    <button className="bg-warning text-white text-xs px-3 py-1 rounded">
+                      Modificar
+                    </button>
 
-                      <button
-                        onClick={() => eliminarProducto(p.id)}
-                        className="bg-danger text-white text-xs px-3 py-1 rounded"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => eliminarProducto(p.id)}
+                      className="bg-danger text-white text-xs px-3 py-1 rounded"
+                    >
+                      Eliminar
+                    </button>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full w-full border bg-card rounded-xl table-auto">
-                  <thead className="bg-panel">
-                    <tr>
-                      <th className="px-4 py-3 text-left">Nombre</th>
-                      <th className="px-4 py-3 text-left">Precio</th>
-                      <th className="px-4 py-3 text-left">Stock</th>
-                      <th className="px-4 py-3 text-left">Acciones</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {productos.map((p) => (
-                      <tr
-                        key={p.id}
-                        className={`border-t transition-opacity duration-300 ${
-                          deletingId === p.id ? "opacity-0" : "opacity-100"
-                        }`}
-                      >
-                        <td className="px-4 py-3">{p.nombre}</td>
-                        <td className="px-4 py-3">{p.precio}€</td>
-                        <td className="px-4 py-3">{p.stock}</td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button className="bg-warning text-white text-xs px-3 py-1 rounded">
-                              Modificar
-                            </button>
-
-                            <button
-                              onClick={() => eliminarProducto(p.id)}
-                              className="bg-danger text-white text-xs px-3 py-1 rounded"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
