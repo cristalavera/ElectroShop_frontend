@@ -87,6 +87,19 @@ function DashboardPage({ onLogout }) {
     cargarProductos();
   }, []);
 
+  // 🔹 EVENTO PERSONALIZADO: producto creado
+  useEffect(() => {
+    const handler = () => {
+      console.log("Producto creado!");
+    };
+
+    window.addEventListener("productoCreado", handler);
+
+    return () => {
+      window.removeEventListener("productoCreado", handler);
+    };
+  }, []);
+
   // 🔹 CREAR PRODUCTO (solo frontend por ahora)
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,7 +114,14 @@ function DashboardPage({ onLogout }) {
     };
 
     try {
-      await axios.post(`${API_URL}/productos`, nuevoProducto);
+      await axios.post(`${API_URL}/productos`, nuevoProducto, {
+        headers: {
+          user: "pepe",
+          role: "ADMIN",
+        },
+      });
+
+      window.dispatchEvent(new Event("productoCreado"));
 
       await cargarProductos(); // 🔥 refrescar desde backend
 
@@ -125,7 +145,15 @@ function DashboardPage({ onLogout }) {
     try {
       setDeletingId(id);
 
-      await axios.delete(`${API_URL}/productos/${id}`);
+      await axios.delete(`${API_URL}/productos/${id}`, {
+        headers:{
+          user: "pepe",
+          role: "ADMIN",
+        }
+      });
+
+
+      
 
       await cargarProductos(); // 🔥 sincroniza con BD
 
@@ -201,6 +229,7 @@ function DashboardPage({ onLogout }) {
                     placeholder="Nombre*"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
+                    onKeyUp={(e) => console.log("Tecla pulsada:", e.key)}
                     className="border p-2 rounded"
                   />
 
