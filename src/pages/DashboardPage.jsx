@@ -1,9 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useReducer } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 
+const initialState = {
+  productos: [],
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "SET_PRODUCTOS":
+      return {
+        ...state,
+        productos: action.payload,
+      };
+
+    default:
+      return state;
+  }
+}
+
 function DashboardPage({ onLogout }) {
-  const [productos, setProductos] = useState([]);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [nombre, setNombre] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
@@ -13,7 +30,6 @@ function DashboardPage({ onLogout }) {
   const [deletingId, setDeletingId] = useState(null);
   const [fadeView, setFadeView] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
-
   const API_URL = import.meta.env.VITE_API_URL;
 
   // 🔹 FUNCIÓN PARA CARGAR PRODUCTOS DESDE BACKEND
@@ -22,10 +38,16 @@ function DashboardPage({ onLogout }) {
       const token = localStorage.getItem("authToken");
 
       const res = await axios.get(`${API_URL}/productos`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 
+          user: "pepe",
+          role: "ADMIN"
+        }
       });
 
-      setProductos(res.data);
+      dispatch({
+        type: "SET_PRODUCTOS",
+        payload: res.data,
+      });
     } catch (err) {
       console.error(err);
       if (err.response?.status === 401) {
@@ -40,22 +62,25 @@ function DashboardPage({ onLogout }) {
     const token = localStorage.getItem("authToken");
 
     if (token === "demo-token") {
-      setProductos([
-        {
-          id: 1,
-          nombre: "Producto Demo",
-          descripcion: "Ejemplo",
-          precio: 99.99,
-          stock: 10,
-        },
-        {
-          id: 2,
-          nombre: "Producto Demo 2",
-          descripcion: "Otro ejemplo",
-          precio: 49.99,
-          stock: 5,
-        },
-      ]);
+      dispatch({
+        type: "SET_PRODUCTOS",
+        payload: [
+          {
+            id: 1,
+            nombre: "Producto Demo",
+            descripcion: "Ejemplo",
+            precio: 99.99,
+            stock: 10,
+          },
+          {
+            id: 2,
+            nombre: "Producto Demo 2",
+            descripcion: "Otro ejemplo",
+            precio: 49.99,
+            stock: 5,
+          },
+        ],
+      });
       return;
     }
 
@@ -218,7 +243,7 @@ function DashboardPage({ onLogout }) {
             } ${showForm ? "md:col-span-2" : "md:col-span-3"}`}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {productos.map((p) => (
+              {state.productos.map((p) => (
                 <div
                   key={p.id}
                   className={`bg-card border p-4 rounded-xl shadow-sm transition-opacity duration-300 ${
