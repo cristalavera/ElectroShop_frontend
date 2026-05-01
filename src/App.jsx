@@ -8,8 +8,10 @@ function App() {
     !!localStorage.getItem("authToken")
   );
 
-  const login = () => {
-    localStorage.setItem("authToken", "token-simulado-electroshop");
+  const login = (email) => {
+    const token = `token-${email}-ADMIN`;
+
+    localStorage.setItem("authToken", token);
     setIsAuthenticated(true);
   };
 

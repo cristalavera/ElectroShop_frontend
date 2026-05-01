@@ -13,7 +13,6 @@ function reducer(state, action) {
         ...state,
         productos: action.payload,
       };
-
     default:
       return state;
   }
@@ -30,26 +29,33 @@ function DashboardPage({ onLogout }) {
   const [deletingId, setDeletingId] = useState(null);
   const [fadeView, setFadeView] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // 🔹 FUNCIÓN PARA CARGAR PRODUCTOS DESDE BACKEND
+  // 🔹 CARGAR PRODUCTOS
   const cargarProductos = async () => {
     try {
       const token = localStorage.getItem("authToken");
 
+      if (!token) {
+        onLogout();
+        return;
+      }
+
       const res = await axios.get(`${API_URL}/productos`, {
-        headers: { 
-          user: "pepe",
-          role: "ADMIN"
-        }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       dispatch({
         type: "SET_PRODUCTOS",
         payload: res.data,
       });
+
     } catch (err) {
       console.error(err);
+
       if (err.response?.status === 401) {
         localStorage.removeItem("authToken");
         onLogout();
@@ -59,35 +65,10 @@ function DashboardPage({ onLogout }) {
 
   // 🔹 CARGA INICIAL
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-
-    if (token === "demo-token") {
-      dispatch({
-        type: "SET_PRODUCTOS",
-        payload: [
-          {
-            id: 1,
-            nombre: "Producto Demo",
-            descripcion: "Ejemplo",
-            precio: 99.99,
-            stock: 10,
-          },
-          {
-            id: 2,
-            nombre: "Producto Demo 2",
-            descripcion: "Otro ejemplo",
-            precio: 49.99,
-            stock: 5,
-          },
-        ],
-      });
-      return;
-    }
-
     cargarProductos();
   }, []);
 
-  // 🔹 EVENTO PERSONALIZADO: producto creado
+  // 🔹 EVENTO PERSONALIZADO
   useEffect(() => {
     const handler = () => {
       console.log("Producto creado!");
@@ -100,11 +81,21 @@ function DashboardPage({ onLogout }) {
     };
   }, []);
 
-  // 🔹 CREAR PRODUCTO (solo frontend por ahora)
+  // 🔹 CREAR PRODUCTO
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!nombre || !precio || !stock) return;
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      onLogout();
+      return;
+    }
+
+    if (!nombre || !precio || !stock) {
+      alert("Completa los campos obligatorios");
+      return;
+    }
 
     const nuevoProducto = {
       nombre,
@@ -116,14 +107,13 @@ function DashboardPage({ onLogout }) {
     try {
       await axios.post(`${API_URL}/productos`, nuevoProducto, {
         headers: {
-          user: "pepe",
-          role: "ADMIN",
+          Authorization: `Bearer ${token}`,
         },
       });
 
       window.dispatchEvent(new Event("productoCreado"));
 
-      await cargarProductos(); // 🔥 refrescar desde backend
+      await cargarProductos();
 
       setNombre("");
       setDescripcion("");
@@ -135,31 +125,47 @@ function DashboardPage({ onLogout }) {
       setTimeout(() => {
         setShowSuccess(false);
       }, 2000);
+
     } catch (error) {
       console.error("Error al crear producto:", error);
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        onLogout();
+      }
     }
   };
 
-  // 🔹 ELIMINAR PRODUCTO (FIX REAL)
+  // 🔹 ELIMINAR PRODUCTO
   const eliminarProducto = async (id) => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      onLogout();
+      return;
+    }
+
     try {
       setDeletingId(id);
 
       await axios.delete(`${API_URL}/productos/${id}`, {
-        headers:{
-          user: "pepe",
-          role: "ADMIN",
-        }
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-
-      
-
-      await cargarProductos(); // 🔥 sincroniza con BD
+      await cargarProductos();
 
       setDeletingId(null);
+
     } catch (error) {
       console.error("Error al eliminar:", error);
+      setDeletingId(null);
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem("authToken");
+        onLogout();
+      }
     }
   };
 
@@ -207,7 +213,7 @@ function DashboardPage({ onLogout }) {
 
             <button
               onClick={() => setShowForm(!showForm)}
-              className={`px-4 py-2 rounded-lg text-white transition-colors duration-300 ${
+              className={`px-4 py-2 rounded-lg text-white ${
                 showForm ? "bg-gray-500" : "bg-primary"
               }`}
             >
@@ -220,7 +226,7 @@ function DashboardPage({ onLogout }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* FORMULARIO */}
           {showForm && (
-            <div className="md:col-span-1 animate-fade">
+            <div className="md:col-span-1">
               <div className="bg-panel p-6 rounded-xl shadow-sm border">
                 <h3 className="font-semibold mb-3">Nuevo producto</h3>
 
@@ -229,7 +235,7 @@ function DashboardPage({ onLogout }) {
                     placeholder="Nombre*"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
-                    onKeyUp={(e) => console.log("Tecla pulsada:", e.key)}
+                    onKeyUp={(e) => console.log("Tecla:", e.key)}
                     className="border p-2 rounded"
                   />
 
@@ -266,16 +272,12 @@ function DashboardPage({ onLogout }) {
           )}
 
           {/* PRODUCTOS */}
-          <div
-            className={`transition-opacity duration-300 ${
-              fadeView ? "opacity-100" : "opacity-0"
-            } ${showForm ? "md:col-span-2" : "md:col-span-3"}`}
-          >
+          <div className={`${showForm ? "md:col-span-2" : "md:col-span-3"}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {state.productos.map((p) => (
                 <div
                   key={p.id}
-                  className={`bg-card border p-4 rounded-xl shadow-sm transition-opacity duration-300 ${
+                  className={`bg-card border p-4 rounded-xl ${
                     deletingId === p.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
