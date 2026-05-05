@@ -27,6 +27,7 @@ function DashboardPage({ onLogout }) {
   const [viewMode, setViewMode] = useState("card");
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const [fadeView, setFadeView] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -278,7 +279,10 @@ function DashboardPage({ onLogout }) {
                       </button>
 
                       <button
-                        onClick={() => eliminarProducto(p.id)}
+                        onClick={() => {
+                          setDeletingId(p.id);
+                          setShowModal(true);
+                        }}
                         className="bg-danger text-white text-xs px-3 py-1 rounded"
                       >
                         Eliminar
@@ -326,6 +330,38 @@ function DashboardPage({ onLogout }) {
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+            <h3 className="text-lg font-semibold mb-4">
+              ¿Seguro que quieres eliminar este producto?
+            </h3>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={async () => {
+                  await eliminarProducto(deletingId);
+                  setShowModal(false);
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded"
+              >
+                Sí
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setDeletingId(null);
+                }}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
