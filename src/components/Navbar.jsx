@@ -1,7 +1,19 @@
+import { useState, useEffect } from "react";
+
 function Navbar({ onLogout }) {
+  const [openMenu, setOpenMenu] = useState(false);
+
+  useEffect(() => {
+    const closeMenu = () => setOpenMenu(false);
+    window.addEventListener("click", closeMenu);
+
+    return () => {
+      window.removeEventListener("click", closeMenu);
+    };
+  }, []);
+
   return (
     <div className="bg-white shadow-md px-4 md:px-6 py-4 flex flex-col md:flex-row items-center md:items-center text-center md:text-left md:justify-between gap-3">
-
       {/* IZQUIERDA */}
       <img
         src="/logo.jpg"
@@ -15,37 +27,47 @@ function Navbar({ onLogout }) {
       </h2>
 
       {/* DERECHA */}
-      <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-4">
-
-        <div className="flex items-center gap-2 text-gray-700">
+      <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenMenu(!openMenu);
+          }}
+          className="flex items-center gap-2 text-gray-700"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
             className="w-6 h-6 md:w-8 md:h-8"
           >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-            />
+            <path d="M12 12c2.761 0 5-2.239 5-5S14.761 2 12 2 7 4.239 7 7s2.239 5 5 5Zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5Z" />
           </svg>
 
           <span className="text-sm md:text-base">Usuario</span>
-        </div>
-
-        <button
-          onClick={onLogout}
-          className="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-800 transition text-sm md:text-base"
-        >
-          Cerrar sesión
         </button>
 
-      </div>
+        {openMenu && (
+          <div className="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-lg z-50">
+            <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">
+              Perfil
+            </button>
 
+            <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">
+              Ajustes
+            </button>
+
+            <button
+              onClick={onLogout}
+              className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export default Navbar;
-
