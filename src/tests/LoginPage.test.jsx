@@ -1,39 +1,86 @@
 import React from "react";
-import { test, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+import { vi, test, expect, afterEach } from "vitest";
+
 import LoginPage from "../pages/LoginPage";
 
-// 🔥 Limpia el DOM después de cada test (MUY IMPORTANTE)
 afterEach(() => {
   cleanup();
 });
 
-test("renderiza el login y ejecuta onLogin al hacer clic", () => {
+test("renderiza correctamente el formulario de login", () => {
+  render(<LoginPage onLogin={() => {}} />);
+
+  expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+
+  expect(screen.getByPlaceholderText(/contraseña/i)).toBeInTheDocument();
+
+  expect(screen.getByText(/acepto los términos/i)).toBeInTheDocument();
+
+  expect(
+    screen.getByRole("button", {
+      name: /iniciar sesión/i,
+    }),
+  ).toBeInTheDocument();
+});
+
+test("ejecuta login correctamente", () => {
   const mockLogin = vi.fn();
 
   render(<LoginPage onLogin={mockLogin} />);
 
-  const boton = screen.getByRole("button", { name: /iniciar sesión/i });
-
-  expect(boton).toBeInTheDocument();
-
-  fireEvent.click(boton);
-
-  expect(mockLogin).toHaveBeenCalledTimes(1);
-});
-
-test("muestra error si el login falla", () => {
-  const mockLogin = vi.fn(() => {
-    throw new Error("Error de conexión");
+  fireEvent.change(screen.getByPlaceholderText(/email/i), {
+    target: { value: "admin@test.com" },
   });
 
-  render(<LoginPage onLogin={mockLogin} />);
+  fireEvent.change(screen.getByPlaceholderText(/contraseña/i), {
+    target: { value: "1234" },
+  });
 
-  const boton = screen.getByRole("button", { name: /iniciar sesión/i });
+  fireEvent.click(screen.getByRole("checkbox"));
 
-  fireEvent.click(boton);
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: /iniciar sesión/i,
+    }),
+  );
 
-  // ✔ Comprobamos que se llamó (aunque falle)
-  expect(mockLogin).toHaveBeenCalled();
+  expect(mockLogin).toHaveBeenCalledTimes(1);
+
+  expect(mockLogin).toHaveBeenCalledWith("admin@test.com");
+});
+
+test("muestra error si faltan campos", () => {
+  render(<LoginPage onLogin={() => {}} />);
+
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: /iniciar sesión/i,
+    }),
+  );
+
+  expect(
+    screen.getByText(/debes rellenar todos los campos/i),
+  ).toBeInTheDocument();
+});
+
+test("muestra error si no se aceptan los términos", () => {
+  render(<LoginPage onLogin={() => {}} />);
+
+  fireEvent.change(screen.getByPlaceholderText(/email/i), {
+    target: { value: "admin@test.com" },
+  });
+
+  fireEvent.change(screen.getByPlaceholderText(/contraseña/i), {
+    target: { value: "1234" },
+  });
+
+  fireEvent.click(
+    screen.getByRole("button", {
+      name: /iniciar sesión/i,
+    }),
+  );
+
+  expect(screen.getByText(/debes aceptar los términos/i)).toBeInTheDocument();
 });
