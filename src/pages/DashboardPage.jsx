@@ -30,6 +30,7 @@ function DashboardPage({ onLogout }) {
   const [showModal, setShowModal] = useState(false);
   const [fadeView, setFadeView] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -155,6 +156,12 @@ function DashboardPage({ onLogout }) {
 
       await cargarProductos();
 
+      setShowDeleteSuccess(true);
+
+      setTimeout(() => {
+        setShowDeleteSuccess(false);
+      }, 2000);
+
       setDeletingId(null);
     } catch (error) {
       console.error("Error al eliminar:", error);
@@ -177,6 +184,12 @@ function DashboardPage({ onLogout }) {
         </div>
       )}
 
+      {showDeleteSuccess && (
+        <div className="fixed top-16 right-4 bg-danger text-white px-4 py-2 rounded-lg shadow-lg animate-fade">
+          Producto eliminado correctamente
+        </div>
+      )}
+
       <div className="p-4 md:p-6">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
@@ -184,7 +197,14 @@ function DashboardPage({ onLogout }) {
 
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <button
-              onClick={() => setViewMode("card")}
+              onClick={() => {
+                setFadeView(false);
+
+                setTimeout(() => {
+                  setViewMode("card");
+                  setFadeView(true);
+                }, 150);
+              }}
               className={`px-3 py-1 rounded ${
                 viewMode === "card" ? "bg-primary text-white" : "bg-gray-200"
               }`}
@@ -193,7 +213,14 @@ function DashboardPage({ onLogout }) {
             </button>
 
             <button
-              onClick={() => setViewMode("list")}
+              onClick={() => {
+                setFadeView(false);
+
+                setTimeout(() => {
+                  setViewMode("list");
+                  setFadeView(true);
+                }, 150);
+              }}
               className={`px-3 py-1 rounded ${
                 viewMode === "list" ? "bg-primary text-white" : "bg-gray-200"
               }`}
@@ -216,8 +243,8 @@ function DashboardPage({ onLogout }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* FORMULARIO */}
           {showForm && (
-            <div className="md:col-span-1">
-              <div className="bg-panel p-6 rounded-xl shadow-sm border">
+            <div className="md:col-span-1 animate-fade">
+              <div className="bg-panel p-6 rounded-hover shadow-sm border">
                 <h3 className="font-semibold mb-3">Nuevo producto</h3>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
@@ -262,7 +289,11 @@ function DashboardPage({ onLogout }) {
           )}
 
           {/* PRODUCTOS */}
-          <div className={`${showForm ? "md:col-span-2" : "md:col-span-3"}`}>
+          <div
+            className={`transition-opacity duration-300 ${
+              fadeView ? "opacity-100" : "opacity-0"
+            } ${showForm ? "md:col-span-2" : "md:col-span-3"}`}
+          >
             {viewMode === "card" ? (
               // 🔹 TARJETAS (lo que ya tienes)
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
