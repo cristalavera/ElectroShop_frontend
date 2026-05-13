@@ -159,3 +159,34 @@ test('crear y eliminar producto correctamente', async ({ page }) => {
 
 });
 
+test('muestra error si no se aceptan los términos', async ({ page }) => {
+
+  // Abrir aplicación
+  await page.goto('https://electroshopfrontendapp.vercel.app');
+
+  await page.waitForLoadState('networkidle');
+
+  // Rellenar login
+  await page.fill(
+    '[data-testid="email-input"]',
+    'test@test.com'
+  );
+
+  await page.fill(
+    '[data-testid="password-input"]',
+    '1234'
+  );
+
+  // NO marcar checkbox
+
+  // Intentar iniciar sesión
+  await page.click(
+    '[data-testid="login-button"]'
+  );
+
+  // Verificar mensaje de error
+  await expect(
+    page.getByText('Debes aceptar los términos')
+  ).toBeVisible();
+
+});
