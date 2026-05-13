@@ -385,13 +385,17 @@ function DashboardPage({ onLogout }) {
 
       {showModal && (
         <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+          <div
+            data-testid="delete-modal"
+            className="bg-white p-6 rounded-lg shadow-lg w-80 text-center"
+          >
             <h3 className="text-lg font-semibold mb-4">
               ¿Seguro que quieres eliminar este producto?
             </h3>
 
             <div className="flex justify-center gap-4">
               <button
+                data-testid="confirm-delete-button"
                 onClick={async () => {
                   await eliminarProducto(deletingId);
                   setShowModal(false);

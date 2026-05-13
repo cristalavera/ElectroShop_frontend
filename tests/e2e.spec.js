@@ -83,11 +83,15 @@ test('los productos se muestran correctamente', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('crear producto correctamente', async ({ page }) => {
+test('crear y eliminar producto correctamente', async ({ page }) => {
+
+  const nombreProducto = `Producto-E2E-${Date.now()}`;
 
   await page.goto('https://electroshopfrontendapp.vercel.app');
 
-  // Inicio de sesión
+  await page.waitForLoadState('networkidle');
+
+  // LOGIN
   await page.fill(
     '[data-testid="email-input"]',
     'test@test.com'
@@ -117,7 +121,7 @@ test('crear producto correctamente', async ({ page }) => {
   // Crear producto
   await page.fill(
     '[data-testid="product-name-input"]',
-    'Producto E2E'
+    nombreProducto
   );
 
   await page.fill(
@@ -134,11 +138,23 @@ test('crear producto correctamente', async ({ page }) => {
     '[data-testid="create-product-button"]'
   );
 
-  // Verificación
-  await expect(
-    page.locator('[data-testid="product-name"]').filter({
-      hasText: 'Producto E2E'
-    })
-  ).toBeVisible();
+  // Verificar creación
+  const productoCreado = page
+    .getByTestId('product-name')
+    .filter({ hasText: nombreProducto })
+    .first();
+
+  await expect(productoCreado).toBeVisible();
+
+  // Eliminar producto
+  await page.getByTestId('delete-button').last().click();
+
+  // Confirmar modal
+  await page.click(
+    '[data-testid="confirm-delete-button"]'
+  );
+
+  // Verificar eliminación
+  await expect(productoCreado).not.toBeVisible();
 
 });
