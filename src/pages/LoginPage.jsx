@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 
 function LoginPage({ onLogin }) {
-
   // 🔹 ESTADOS
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +22,10 @@ function LoginPage({ onLogin }) {
 
         {/* FORMULARIO */}
         <div className="p-8 flex flex-col justify-center">
-          <h2 className="text-2xl font-bold mb-2 text-center md:text-left">
+          <h2
+            data-testid="titulo-login"
+            className="text-2xl font-bold mb-2 text-center md:text-left"
+          >
             Bienvenido a <span className="text-blue-600">ElectroShop</span>
           </h2>
 
@@ -33,6 +35,7 @@ function LoginPage({ onLogin }) {
 
           <form className="flex flex-col gap-4">
             <input
+              data-testid="email-input"
               type="email"
               placeholder="Email"
               value={email}
@@ -41,6 +44,7 @@ function LoginPage({ onLogin }) {
             />
 
             <input
+              data-testid="password-input"
               type="password"
               placeholder="Contraseña"
               value={password}
@@ -50,6 +54,7 @@ function LoginPage({ onLogin }) {
 
             <label className="flex items-center gap-2 text-sm">
               <input
+                data-testid="terms-checkbox"
                 type="checkbox"
                 checked={accepted}
                 onChange={(e) => setAccepted(e.target.checked)}
@@ -58,6 +63,7 @@ function LoginPage({ onLogin }) {
             </label>
 
             <button
+              data-testid="login-button"
               type="button"
               onClick={() => {
                 if (!email || !password) {
@@ -79,7 +85,6 @@ function LoginPage({ onLogin }) {
             </button>
 
             {error && <p className="text-red-500">{error}</p>}
-            
           </form>
         </div>
       </div>

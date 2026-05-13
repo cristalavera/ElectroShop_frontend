@@ -193,7 +193,9 @@ function DashboardPage({ onLogout }) {
       <div className="p-4 md:p-6">
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
-          <h2 className="text-xl font-semibold">Inventario ElectroShop</h2>
+          <h2 data-testid="inventory-title" className="text-xl font-semibold">
+            Inventario ElectroShop
+          </h2>
 
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <button
@@ -230,7 +232,7 @@ function DashboardPage({ onLogout }) {
 
             <button
               onClick={() => setShowForm(!showForm)}
-              className={`px-4 py-2 rounded-lg text-white ${
+              className={`px-4 py-2 rounded-lg text-white transition-colors duration-300 ${
                 showForm ? "bg-gray-500" : "bg-primary"
               }`}
             >
@@ -249,6 +251,7 @@ function DashboardPage({ onLogout }) {
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
                   <input
+                    data-testid="product-name-input"
                     placeholder="Nombre*"
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
@@ -257,6 +260,7 @@ function DashboardPage({ onLogout }) {
                   />
 
                   <input
+                    data-testid="product-description-input"
                     placeholder="Descripción"
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
@@ -264,6 +268,7 @@ function DashboardPage({ onLogout }) {
                   />
 
                   <input
+                    data-testid="product-price-input"
                     placeholder="Precio*"
                     type="number"
                     step="0.01"
@@ -273,6 +278,7 @@ function DashboardPage({ onLogout }) {
                   />
 
                   <input
+                    data-testid="product-stock-input"
                     placeholder="Stock*"
                     type="number"
                     value={stock}
@@ -280,7 +286,10 @@ function DashboardPage({ onLogout }) {
                     className="border p-2 rounded"
                   />
 
-                  <button className="bg-secondary text-white py-2 rounded-lg">
+                  <button
+                    data-testid="create-product-button"
+                    className="bg-secondary text-white py-2 rounded-lg"
+                  >
                     Crear Producto
                   </button>
                 </form>
@@ -299,10 +308,12 @@ function DashboardPage({ onLogout }) {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {state.productos.map((p) => (
                   <div key={p.id} className="bg-card border p-4 rounded-xl">
-                    <h3 className="font-semibold">{p.nombre}</h3>
-                    <p>{p.descripcion}</p>
-                    <p>Precio: {p.precio}€</p>
-                    <p>Stock: {p.stock}</p>
+                    <h3 data-testid="product-name" className="font-semibold">
+                      {p.nombre}
+                    </h3>
+                    <p data-testid="product-description">{p.descripcion}</p>
+                    <p data-testid="product-price">Precio: {p.precio}€</p>
+                    <p data-testid="product-stock">Stock: {p.stock}</p>
 
                     <div className="flex gap-2 mt-2">
                       <button className="bg-warning text-white text-xs px-3 py-1 rounded">
@@ -310,6 +321,7 @@ function DashboardPage({ onLogout }) {
                       </button>
 
                       <button
+                        data-testid="delete-button"
                         onClick={() => {
                           setDeletingId(p.id);
                           setShowModal(true);
@@ -337,16 +349,25 @@ function DashboardPage({ onLogout }) {
                 <tbody>
                   {state.productos.map((p) => (
                     <tr key={p.id} className="border-t">
-                      <td className="p-2">{p.nombre}</td>
-                      <td className="p-2">{p.descripcion}</td>
-                      <td className="p-2">{p.precio}€</td>
-                      <td className="p-2">{p.stock}</td>
+                      <td data-testid="product-name" className="p-2">
+                        {p.nombre}
+                      </td>
+                      <td data-testid="product-description" className="p-2">
+                        {p.descripcion}
+                      </td>
+                      <td data-testid="product-price" className="p-2">
+                        {p.precio}€
+                      </td>
+                      <td data-testid="product-stock" className="p-2">
+                        {p.stock}
+                      </td>
                       <td className="p-2 flex gap-2">
                         <button className="bg-warning text-white text-xs px-2 py-1 rounded">
                           Modificar
                         </button>
 
                         <button
+                          data-testid="delete-button"
                           onClick={() => eliminarProducto(p.id)}
                           className="bg-danger text-white text-xs px-2 py-1 rounded"
                         >
