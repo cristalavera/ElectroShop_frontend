@@ -158,3 +158,4 @@ test('crear y eliminar producto correctamente', async ({ page }) => {
   await expect(productoCreado).not.toBeVisible();
 
 });
+
